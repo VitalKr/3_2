@@ -2,9 +2,6 @@ class NoteService {
     var notes = mutableListOf<Note>()
     var comments = mutableListOf<Comment>()
 
-
-
-
     fun add(note: Note): Note {
         val newNote = note.copy(id = notes.size + 1, deleted = false)
         notes.add(newNote)
@@ -16,8 +13,10 @@ class NoteService {
         for (note in notes) {
             if (!note.deleted) {
                 if (id == note.id) {
-                    val newComment = comment.copy(noteId = note.id, commentId = comments.size + 1,
-                        message = comment.message, deleted = false)
+                    val newComment = comment.copy(
+                        noteId = note.id, commentId = comments.size + 1,
+                        message = comment.message, deleted = false
+                    )
                     comments.add(newComment)
                     println(comments.last())
                     return comments.last()
@@ -26,7 +25,6 @@ class NoteService {
         }
         throw NoteException("Такой заметки нет")
     }
-
 
     fun delete(id: Int): Boolean {
         for ((index, note) in notes.withIndex()) {
@@ -57,8 +55,10 @@ class NoteService {
         for ((index, note) in notes.withIndex()) {
             if (!note.deleted) {
                 if (id == note.id) {
-                    notes[index] = note.copy(id = note.id, ownerId = note.id, title = newNote.title,
-                        text = newNote.text, deleted = false)
+                    notes[index] = note.copy(
+                        id = note.id, ownerId = note.id, title = newNote.title,
+                        text = newNote.text, deleted = false
+                    )
                     println(notes[index])
                     return true
                 }
@@ -71,8 +71,10 @@ class NoteService {
         for ((index, comment) in comments.withIndex()) {
             if (!comment.deleted) {
                 if (commentId == comment.commentId) {
-                    comments[index] = comment.copy(noteId = comment.noteId, commentId = comment.commentId,
-                        deleted = false, message = newComment.message)
+                    comments[index] = comment.copy(
+                        noteId = comment.noteId, commentId = comment.commentId,
+                        deleted = false, message = newComment.message
+                    )
                     println(comments[index])
                     return true
                 }
@@ -122,8 +124,6 @@ class NoteService {
         throw CommentRestoreException("Такого комментария нет")
     }
 }
-
-
 
 class NoteException(message: String) : RuntimeException(message)
 class CommentException(message: String) : RuntimeException(message)
