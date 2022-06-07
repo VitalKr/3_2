@@ -3,16 +3,18 @@ import org.junit.Test
 
 
 class NoteServiceTest {
-    val service = NoteService()
+    private val service = NoteService()
+    private val serviceComment = CommentService()
 
     @Test
     fun testAdd() {
+
         //Arrange
-        val noteTest: Note = Note(1, 0, " ", " ", 0, false)
+        val noteTest = Note(0, 0, " ", " ", 0, false)
         //Act
         val add = service.add((noteTest))
         val result = add.id
-        val excepted = 1
+        val excepted = 3
         //Assert
         assertEquals(result, excepted)
     }
@@ -20,22 +22,22 @@ class NoteServiceTest {
     @Test
     fun testCreateComment() {
         //Arrange
-        val noteTest: Note = Note(1, 1, " ", " ", 0, false)
+        val noteTest = Note(1, 1, " ", " ", 0, false)
 
-        val commentTest: Comment = Comment(1, 0, " ", 0, false)
+        val commentTest = Comment(1, 0, " ", 0, false)
         //Act
-        service.add((noteTest))
-        val result = service.createComment(1, commentTest)
+        service.add(noteTest)
+        val result = serviceComment.add(commentTest)
         val excepted = 1
         //Assert
         assertEquals(result.noteId, excepted)
     }
 
+    //
     @Test
     fun testDelete() {
         //Arrange
-        val noteTest: Note = Note(1, 0, " ", " ", 0, false)
-        service.add(noteTest)
+
         //Act
         val result = service.delete(1)
         val expected = true
@@ -44,14 +46,29 @@ class NoteServiceTest {
     }
 
     @Test
+    fun testRestoreNote() {
+        //Arrange
+        val noteTest = Note(1, 0, " ", " ", 0, false)
+        //Act
+        service.add(noteTest)
+        service.delete(1)
+        val result = service.restore(1)
+        val expected = true
+        //Assert
+        assertEquals(result, expected)
+
+
+    }
+
+    @Test
     fun testDeleteComment() {
         //Arrange
-        val noteTest: Note = Note(0, 0, " ", " ", 0, false)
+        val noteTest = Note(0, 0, " ", " ", 0, false)
         service.add(noteTest)
-        val commentTest: Comment = Comment(0, 0, " ", 0, false)
-        service.createComment(1, commentTest)
+        val commentTest = Comment(1, 0, " ", 0, false)
+        serviceComment.add(commentTest)
         //Act
-        val result = service.deleteComment(1)
+        val result = serviceComment.delete(1)
         val expected = true
         //Assert
         assertEquals(result, expected)
@@ -60,7 +77,7 @@ class NoteServiceTest {
     @Test
     fun testEdit() {
         //Arrange
-        val noteTest: Note = Note(1, 0, " ", "Hello", 0, false)
+        val noteTest = Note(1, 0, " ", "Hello", 0, false)
         service.add(noteTest)
         //Act
         val result = service.edit(1, noteTest)
@@ -72,33 +89,23 @@ class NoteServiceTest {
     @Test
     fun testEditComment() {
         //Arrange
-        val noteTest: Note = Note(1, 0, "", "", 0, false)
+        val noteTest = Note(1, 0, "", "", 0, false)
         service.add(noteTest)
-        val commentTest: Comment = Comment(1, 0, "", 0, true)
-        service.createComment(1, commentTest)
+        val commentTest = Comment(1, 0, "", 0, true)
+        serviceComment.add(commentTest)
         //Act
-        val result = service.editComment(1, commentTest)
+        val result = serviceComment.edit(1, commentTest)
 
         val expected = true
         //Assert
         assertEquals(result, expected)
     }
 
-    @Test
-    fun testGetTitle() {
-        //Arrange
-        val noteTest: Note = Note(10, 0, "title", "", 0, false)
-        val result = service.add(noteTest)
-        //Act
-        val expected = "title"
-        //Assert
-        assertEquals(result.title, expected)
-    }
 
     @Test
     fun testGetById() {
         //Arrange
-        val note: Note = Note(10, 0, "title", "text", 0, false)
+
         //Act
         val result = service.getById(10)
         val expected = println("""title: title, text: text""")
@@ -107,12 +114,12 @@ class NoteServiceTest {
     }
 
     @Test
-    fun testGetComments() {
+    fun testGetByIdComments() {
         //Arrange
-        val note: Note = Note(0, 0, "", "", 0, false)
-        val comment: Comment = Comment(0, 0, "Hello", 0, true)
-        service.add(note)
-        val result = service.createComment(1, comment)
+
+        val comment = Comment(1, 0, "Hello", 0, true)
+        serviceComment.add(comment)
+        val result = serviceComment.add(comment)
         //Act
         val expected = "Hello"
         //Assert
@@ -122,13 +129,9 @@ class NoteServiceTest {
     @Test
     fun testRestoreComment() {
         //Arrange
-        val commentTest: Comment = Comment(1, 0, "", 1, true)
-        val noteTest: Note = Note(1, 0, " ", " ", 0, false)
+        val commentTest = Comment(1, 0, "", 1, true)
         //Act
-        service.add(noteTest)
-        service.createComment(1, commentTest)
-        service.deleteComment(1)
-        service.restoreComment(1)
+        serviceComment.restore(1)
         val result = true
         //Assert
         assertEquals(commentTest.deleted, result)
@@ -137,10 +140,10 @@ class NoteServiceTest {
     @Test(expected = NoteException::class)
     fun testExceptionEditNote() {
         //Arrange
-        val noteTest: Note = Note(1, 0, " ", " ", 0, false)
+        val noteTest = Note(1, 0, " ", " ", 0, false)
         service.add(noteTest)
         //Act
-        val result = service.edit(5, noteTest)
+        val result = service.edit(10, noteTest)
         val expected = NoteException::class
         //Assert
         assertEquals(result, expected)
@@ -149,7 +152,7 @@ class NoteServiceTest {
     @Test(expected = NoteException::class)
     fun testExceptionDeleteNote() {
         //Act
-        val result = service.delete(5)
+        val result = service.delete(10)
         val expected = NoteException::class
         //Assert
         assertEquals(result, expected)
@@ -158,9 +161,9 @@ class NoteServiceTest {
     @Test(expected = NoteException::class)
     fun testExceptionAddComment() {
         //Arrange
-        val comment: Comment = Comment(0, 0, " ", 0, true)
+        val comment = Comment(0, 0, " ", 0, true)
         //Act
-        val result = service.createComment(6, comment)
+        val result = serviceComment.add(comment)
         val expected = NoteException::class
         //Assert
         assertEquals(result, expected)
@@ -169,7 +172,7 @@ class NoteServiceTest {
     @Test(expected = CommentException::class)
     fun testExceptionDeleteComment() {
         //Act
-        val result = service.deleteComment(5)
+        val result = serviceComment.delete(5)
         val expected = CommentException::class
         //Assert
         assertEquals(result, expected)
@@ -178,9 +181,9 @@ class NoteServiceTest {
     @Test(expected = CommentException::class)
     fun testExceptionEditComment() {
         //Arrange
-        val commentTest: Comment = Comment(0, 0, " ", 0, true)
+        val commentTest = Comment(0, 0, " ", 0, true)
         //Act
-        val result = service.editComment(5, commentTest)
+        val result = serviceComment.edit(5, commentTest)
         val expected = CommentException::class
         //Assert
         assertEquals(result, expected)
@@ -189,11 +192,11 @@ class NoteServiceTest {
     @Test(expected = CommentRestoreException::class)
     fun testExceptionRestoreComment() {
         //Arrange
-        val commentTest: Comment = Comment(1, 0, " ", 1, true)
+        val commentTest = Comment(1, 0, " ", 1, true)
         commentTest.commentId = 1
         commentTest.deleted = true
         //Act
-        val result = service.restoreComment(5)
+        val result = serviceComment.restore(5)
         val expected = CommentRestoreException::class
         //Assert
         assertEquals(result, expected)
